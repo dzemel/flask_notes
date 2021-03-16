@@ -1,7 +1,7 @@
 """Flask app for Notes"""
 from flask import Flask, request, render_template, redirect, session, flash
-from models import db, connect_db, User
-from forms import RegisterForm, LoginForm
+from models import db, connect_db, User, Note
+from forms import RegisterForm, LoginForm, NoteForm
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql:///notes"
@@ -35,19 +35,9 @@ def show_register_page():
         db.session.add(user)
         db.session.commit()
         session["username"] = user.username
-        return redirect('/secret')
+        return redirect(f"/users/{user.username}")
     else:
         return render_template('register.html', form=form)
-
-
-@app.route("/secret")
-def show_secret_page():
-    
-    if "username" not in session:
-        flash("THIS PAGE IS SECRET! YOU ARE NOT ALLOWED!!!!!")
-        return redirect("/")
-    else:
-        return render_template("secret.html")
 
 
 @app.route('/login', methods=["GET", "POST"])
@@ -62,7 +52,7 @@ def show_login_page():
 
         if user:
             session["username"] = user.username
-            return redirect("/secret")
+            return redirect(f"/users/{user.username}")
         else: 
             form.username.errors =["Invalid username/password"]
 
@@ -74,4 +64,65 @@ def logout_user():
     session.pop("username", None)
     return redirect("/")
 
-# @app.route("/users/<int:user_id")
+@app.route("/users/<username>")
+def show_user_details_page(username):
+    
+    if "username" not in session:
+        flash("THIS PAGE IS SECRET! YOU ARE NOT ALLOWED!!!!!")
+        return redirect("/")
+    else:
+        user = User.query.get_or_404(username)
+
+        # TODO - ADD notes a user has 
+
+        return render_template("user_details.html", user=user)
+
+
+@app.route("/users/<username>/delete")
+def delete_user(username):
+
+    user = User.query.get_or_404(username)
+
+    if session["username"] == user.username:
+
+        if user.notes:
+            db.session.delete(user.notes)
+        db.session.delete(user)
+        db.session.commit()
+
+        session.pop("username")
+
+        return redirect("/")
+    else:    
+        flash("THIS PAGE IS SECRET! YOU ARE NOT ALLOWED!!!!!")
+        return redirect("/")
+    
+
+@app.route("/users/<username>/notes/add", methods=["GET", "POST"])
+def add_note(username):
+
+    user = User.query.get_or_404(username)
+
+    if session["username"] == user.username:
+        form = NoteForm()
+
+        if form.validate_on_submit():
+            title = form.title.data
+            content = form.content.data
+            
+            user.notes.append(Note(title=title, content=content))  
+
+            db.session.commit()
+            
+            return redirect(f"/users/{user.username}")
+
+        return render_template('add_note.html', form=form)
+    else: 
+        flash("THIS PAGE IS SECRET! YOU ARE NOT ALLOWED!!!!!")
+        return redirect("/")
+  
+
+    
+
+    
+

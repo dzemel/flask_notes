@@ -19,8 +19,15 @@ class RegisterForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    """From for Loggin in User"""
+    """Formm for Loggin in User"""
     username = StringField("Username", 
                            validators=[InputRequired(), Length(max=20)])
     password = PasswordField("Password", 
                              validators=[InputRequired()])
+
+class NoteForm(FlaskForm):
+    """Form for Taking Notes"""
+    title = StringField("title", validators=[InputRequired(), Length(max=100)])
+
+    content = TextField("content", validators=[InputRequired()])
+    
