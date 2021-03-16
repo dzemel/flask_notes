@@ -1,4 +1,4 @@
-"""Models for Cupcake app."""
+"""Models for notes app."""
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 
@@ -17,25 +17,25 @@ class User(db.Model):
     __tablename__ = "users"
 
     username = db.Column(db.String(20), 
-                   primary_key=True
-                   )
+                         primary_key=True)
     password = db.Column(db.Text,
-                       nullable=False)
+                         nullable=False)
     email = db.Column(db.String(50),
-                     nullable=False,
-                     unique=True)
+                      nullable=False,
+                      unique=True)
     first_name = db.Column(db.String(30),
-                       nullable=False)
+                           nullable=False)
     last_name = db.Column(db.String(30),
-                       nullable=False)
+                          nullable=False)
 
     @classmethod
-    def register(cls, username, pwd):
+    def register(cls, username, pwd, email, first_name, last_name):
         """ Register user w/hashed pw and return user """
 
         hashed = bcrypt.generate_password_hash(pwd).decode('utf8')
 
-        return cls(username=username, password=hashed)
+        return cls(username=username, password=hashed, email=email, 
+                   first_name=first_name, last_name=last_name)
 
     @classmethod
     def authenticate(cls, username, pwd):

@@ -1,17 +1,12 @@
 {% extends "base.html" %}
 
 
-{% block title %} Register An Account {% endblock %}
+{% block title %} Login {% endblock %}
 
 {% block content %}
 
-<h1>Register for An Account</h1>
-
-{% for msg in get_flashed_messages()%}
-  <div>{{msg}}</div>
-{% endfor %}
-
-<form id="register-account-form" method="POST">
+<h1>Login into Account</h1>
+<form id="login-account-form" method="POST">
     {{ form.hidden_tag() }}
 
   {% for field in form
@@ -28,7 +23,7 @@
 
   {% endfor %}
 
-  <button type="submit">Register</button>
+  <button type="submit">Login</button>
 </form>
 
 {% endblock %}
