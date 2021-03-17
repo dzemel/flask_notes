@@ -20,6 +20,7 @@ def route_to_register_page():
 @app.route('/register', methods=["GET", "POST"])
 def show_register_page():
 
+# if "username" not in session:
     form = RegisterForm()
 
     if form.validate_on_submit():
@@ -78,24 +79,21 @@ def show_user_details_page(username):
         return render_template("user_details.html", user=user)
 
 
-@app.route("/users/<username>/delete")
+@app.route("/users/<username>/delete", methods=["GET","POST"])
 def delete_user(username):
 
     user = User.query.get_or_404(username)
 
     if session["username"] == user.username:
 
-        if user.notes:
-            db.session.delete(user.notes)
+        Note.query.filter(Note.owner == user.username).delete()
         db.session.delete(user)
         db.session.commit()
 
-        session.pop("username")
-
-        return redirect("/")
-    else:    
+        session.pop("username") 
+    else:   
         flash("THIS PAGE IS SECRET! YOU ARE NOT ALLOWED!!!!!")
-        return redirect("/")
+    return redirect("/")
     
 
 @app.route("/users/<username>/notes/add", methods=["GET", "POST"])
@@ -122,7 +120,37 @@ def add_note(username):
         return redirect("/")
   
 
-    
+@app.route("/notes/<note_id>/update", methods=["GET", "POST"])
+def edit_note(note_id):
 
-    
+    note = Note.query.get_or_404(note_id)
+    user = note.user_name
+    if session["username"] == user.username:
+        form = NoteForm(obj=note)
 
+        if form.validate_on_submit():
+            note.title = form.title.data
+            note.content = form.content.data
+            db.session.commit()
+            flash(f"Note {note.title} updated!")
+            return redirect(f"/users/{user.username}")
+        
+        return render_template("edit_note.html", form=form)
+    else: 
+        flash("THIS PAGE IS SECRET! YOU ARE NOT ALLOWED!!!!!")
+        return redirect("/")
+  
+
+@app.route("/notes/<note_id>/delete", methods=["GET", "POST"])
+def delete_note(note_id):
+    note = Note.query.get_or_404(note_id)
+    
+    user = note.user_name
+    if session["username"] == user.username:
+        db.session.delete(note)
+        db.session.commit()
+        return redirect(f"/users/{user.username}")
+    else:
+        flash("THIS PAGE IS SECRET! YOU ARE NOT ALLOWED!!!!!")
+        return redirect("/")
+  
